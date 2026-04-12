@@ -1,12 +1,23 @@
 #include <stdio.h>
+#include <ctype.h>
 
 int main() {
-    char str[]="Don't ask what your country can do for you, but ask what you can do for your country.";
+    char str[] = "Don't ask what your country can do for you, but ask what you can do for your country.";
     int wordCount = 0;
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
-    
+    int in_word = 0;
+
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (isalpha(str[i])) {
+            if (!in_word && !(i > 0 && str[i-1] == '\'')) {
+                wordCount++;
+                in_word = 1;
+            }
+        } else if (str[i] != '\'') {
+            in_word = 0;
+        }
+    }
+
     printf("单词数量: %d\n", wordCount);
-    
+
     return 0;
 }
