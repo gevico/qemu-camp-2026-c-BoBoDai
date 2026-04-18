@@ -38,8 +38,27 @@ int __cmd_myfile(const char* filename) {
     fflush(stdout);
     printf("filepath: %s\n", filepath);
 
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    // 打开文件
+    fd = open(filepath, O_RDONLY);
+    if (fd < 0) {
+      perror("open");
+      return 0;
+    }
+
+    // 读取 ELF 头
+    if (read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
+      perror("read");
+      close(fd);
+      return 0;
+    }
+
+    // 检查 ELF 魔数
+    if (ehdr.e_ident[0] != ELFMAG0 || ehdr.e_ident[1] != ELFMAG1 ||
+        ehdr.e_ident[2] != ELFMAG2 || ehdr.e_ident[3] != ELFMAG3) {
+      printf("Not an ELF file\n");
+      close(fd);
+      return 0;
+    }
 
     print_elf_type(ehdr.e_type);
     close(fd);

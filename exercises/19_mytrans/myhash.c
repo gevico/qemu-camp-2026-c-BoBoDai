@@ -54,10 +54,11 @@ int hash_table_insert(HashTable *table, const char *key, const char *value) {
     return 0;
 
   unsigned long hash = hash_function(key) % HASH_TABLE_SIZE;
-  HashNode *node = table->buckets[hash];
-
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+  HashNode *node = malloc(sizeof(HashNode));
+  node->key = strdup(key);
+  node->value = strdup(value);
+  node->next = table->buckets[hash];
+  table->buckets[hash] = node;
 
   return 1;
 }
@@ -70,8 +71,45 @@ const char *hash_table_lookup(HashTable *table, const char *key) {
   unsigned long hash = hash_function(key) % HASH_TABLE_SIZE;
   HashNode *node = table->buckets[hash];
 
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+  while (node != NULL) {
+    if (strcmp(node->key, key) == 0) {
+      return node->value;
+    }
+    node = node->next;
+  }
 
   return NULL; // 未找到
+}
+
+// 加载词典
+int load_dictionary(const char *filename, HashTable *table, uint64_t* dict_count) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        return -1;
+    }
+
+    char line[1024];
+    char *key = NULL;
+    *dict_count = 0;
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+        if (line[0] == '#') {
+            // 去掉换行符
+            line[strcspn(line, "\n")] = '\0';
+            key = strdup(line + 1);  // 跳过 #
+        } else if (strncmp(line, "Trans:", 6) == 0) {
+            if (key != NULL) {
+                char *value = line + 6;
+                while (*value == ' ' || *value == ':') value++;
+                value[strcspn(value, "\n")] = '\0';
+                hash_table_insert(table, key, value);
+                (*dict_count)++;
+                free(key);
+                key = NULL;
+            }
+        }
+    }
+
+    fclose(file);
+    return 0;
 }

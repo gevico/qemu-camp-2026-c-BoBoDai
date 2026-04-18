@@ -9,15 +9,54 @@ int parse_replace_command(const char* cmd, char** old_str, char** new_str) {
         return -1;
     }
 
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    // 跳过 "s/"
+    const char* p = cmd + 2;
+
+    // 找到第一个分隔符 /
+    const char* sep = strchr(p, '/');
+    if (sep == NULL) {
+        return -1;
+    }
+
+    // 提取 old_str
+    size_t old_len = sep - p;
+    *old_str = malloc(old_len + 1);
+    strncpy(*old_str, p, old_len);
+    (*old_str)[old_len] = '\0';
+
+    // 提取 new_str
+    p = sep + 1;
+    sep = strchr(p, '/');
+    if (sep == NULL) {
+        free(*old_str);
+        return -1;
+    }
+
+    size_t new_len = sep - p;
+    *new_str = malloc(new_len + 1);
+    strncpy(*new_str, p, new_len);
+    (*new_str)[new_len] = '\0';
 
     return 0;
 }
 
 void replace_first_occurrence(char* str, const char* old, const char* new) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    char* pos = strstr(str, old);
+    if (pos == NULL) {
+        return;
+    }
+
+    size_t old_len = strlen(old);
+    size_t new_len = strlen(new);
+
+    // 如果新字符串更长，需要移动后面的字符
+    if (new_len > old_len) {
+        memmove(pos + new_len, pos + old_len, strlen(pos + old_len) + 1);
+    } else {
+        memmove(pos + new_len, pos + old_len, strlen(pos + old_len) + 1);
+    }
+
+    memcpy(pos, new, new_len);
 }
 
 int main(int argc, char* argv[]) {

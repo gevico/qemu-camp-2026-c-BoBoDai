@@ -59,7 +59,14 @@ int is_builtin_command(char **args) {
     return 0;
 
   // TODO: 在这里添加你的代码
-  // I AM NOT DONE
+  if (strcmp(args[0], "cd") == 0) {
+    execute_cd(args);
+    return 1;
+  }
+  if (strcmp(args[0], "exit") == 0) {
+    execute_exit();
+    return 1;
+  }
 
   return 0;
 }
@@ -77,8 +84,26 @@ int parse_input(char *input, char **args) {
   while (*buf != '\0' && i < MAX_ARGS - 1) {
       char c = *buf;
 
-        // TODO: 在这里添加你的代码
-        // I AM NOT DONE
+      if (in_quotes) {
+          if (c == '"') {
+              in_quotes = 0;
+          } else {
+              arg_buf[arg_buf_idx++] = c;
+          }
+      } else {
+          if (c == '"') {
+              in_quotes = 1;
+          } else if (c == ' ' || c == '\t') {
+              if (arg_buf_idx > 0) {
+                  arg_buf[arg_buf_idx] = '\0';
+                  args[i++] = strdup(arg_buf);
+                  arg_buf_idx = 0;
+                  memset(arg_buf, 0, sizeof(arg_buf));
+              }
+          } else {
+              arg_buf[arg_buf_idx++] = c;
+          }
+      }
 
       buf++;
   }

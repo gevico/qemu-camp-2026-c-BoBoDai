@@ -8,7 +8,6 @@
 
 void trim(char *str) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
 }
 
 int load_dictionary(const char *filename, HashTable *table,
@@ -25,7 +24,6 @@ int load_dictionary(const char *filename, HashTable *table,
   int in_entry = 0;
 
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
 
   fclose(file);
   return 0;

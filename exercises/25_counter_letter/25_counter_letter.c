@@ -22,15 +22,26 @@ TreeNode* create_node(char letter) {
 
 // 向BST中插入节点或更新计数
 TreeNode* insert_or_update(TreeNode* root, char letter) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (root == NULL) {
+        return create_node(letter);
+    }
+    char l = tolower(letter);
+    if (l < root->letter) {
+        root->left = insert_or_update(root->left, letter);
+    } else if (l > root->letter) {
+        root->right = insert_or_update(root->right, letter);
+    } else {
+        root->count++;
+    }
+    return root;
 }
 
 // 中序遍历BST并打印结果（按字母顺序）
 void inorder_traversal(TreeNode* root) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (root == NULL) return;
+    inorder_traversal(root->left);
     printf("%c:%d\n", root->letter, root->count);
+    inorder_traversal(root->right);
 }
 
 // 释放BST内存
@@ -44,29 +55,29 @@ void free_tree(TreeNode* root) {
 
 int main(int argc, char *argv[]) {
     const char* file_path = "paper.txt";
-    
+
     FILE *file = fopen(file_path, "r");
     if (file == NULL) {
         perror("Error opening file");
         return 1;
     }
-    
+
     TreeNode* root = NULL;
     int c;
-    
+
     while ((c = fgetc(file)) != EOF) {
         if (isalpha(c)) {  // 只处理字母字符
             root = insert_or_update(root, c);
         }
     }
-    
+
     fclose(file);
-    
+
     // 按字母顺序输出结果
     inorder_traversal(root);
-    
+
     // 释放内存
     free_tree(root);
-    
+
     return 0;
 }

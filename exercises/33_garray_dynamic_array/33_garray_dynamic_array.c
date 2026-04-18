@@ -4,71 +4,46 @@
 #include <string.h>
 
 /*
- * 13 可扩展动态数组（类似 QEMU GArray）
- * 要求：
- *  - 实现动态数组 GArray，初始容量 16，满时按 2 倍扩容
- *  - 接口：
- *      GArray* garray_init(size_t elem_size);
- *      void    garray_append(GArray* arr, void* elem);
- *      void    garray_free(GArray* arr);
- *  - 测试：以 int 作为元素类型，追加 17 个元素后，len=17，capacity=32，数据正确
+ * 17 位图操作
+ * 要求：实现 set_bit 与 test_bit，按位操作 (byte=bit/8, offset=bit%8)
+ * 演示：位图大小 10（位），置位 0、3、5；查询 3→1，查询 1→0
  */
 
-#define GARRAY_INIT_CAP 16U
-
-/*
- * 结构体定义：为实现泛型 append 的字节拷贝，必须保存元素大小 elem_size
- */
-typedef struct {
-    void* data;       /* 数据缓冲区 */
-    size_t len;       /* 已使用的元素个数 */
-    size_t capacity;  /* 当前容量（元素个数） */
-    size_t elem_size; /* 元素大小（字节数） */
-} GArray;
-
-/* 接口：初始化动态数组 */
-GArray* garray_init(size_t elem_size) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+/* 将第 bit_index 位设置为 1（LSB 为最低位） */
+static void set_bit(unsigned char* bitmap, size_t bit_index) {
+    size_t byte = bit_index / 8;
+    size_t offset = bit_index % 8;
+    bitmap[byte] |= (1 << offset);
 }
 
-/* 接口：追加单个元素，必要时扩容为原来的 2 倍 */
-void garray_append(GArray* arr, void* elem) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
-}
-
-/* 接口：释放动态数组 */
-void garray_free(GArray* arr) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+/* 读取第 bit_index 位，返回 0/1（LSB 为最低位） */
+static int test_bit(const unsigned char* bitmap, size_t bit_index) {
+    size_t byte = bit_index / 8;
+    size_t offset = bit_index % 8;
+    return (bitmap[byte] >> offset) & 1;
 }
 
 int main(void) {
-    GArray* a = garray_init(sizeof(int));
-    if (!a) {
-        fprintf(stderr, "初始化失败\n");
+    /* 位图大小 10 位 → 需要 2 个字节 */
+    const size_t bits = 10;
+    const size_t bytes = (bits + 7) / 8; /* 向上取整 */
+    unsigned char* bitmap = (unsigned char*)calloc(bytes, sizeof(unsigned char));
+    if (!bitmap) {
+        fprintf(stderr, "内存分配失败\n");
         return 1;
     }
 
-    // 追加 1..17 共 17 个元素（触发一次扩容 16->32）
-    for (int i = 1; i <= 17; ++i) {
-        garray_append(a, &i);
-    }
-    // 打印 len/capacity 以及关键元素值，便于自动化判定
-    printf("len=%zu\n", a->len);
-    printf("capacity=%zu\n", a->capacity);
-    int* arr_i = (int*)a->data;
-    printf("arr[0]=%d\n", arr_i[0]);
-    printf("arr[16]=%d\n", arr_i[16]);
+    /* 置位 0、3、5 */
+    set_bit(bitmap, 0);
+    set_bit(bitmap, 3);
+    set_bit(bitmap, 5);
 
-    // 校验：len==17 && capacity==32 && 首尾值正确
-    int ok = (a->len == 17 && a->capacity == 32 && arr_i[0] == 1 && arr_i[16] == 17);
-    if (!ok) {
-        garray_free(a);
-        return 1;
-    }
+    /* 查询并按题意输出 */
+    int b3 = test_bit(bitmap, 3);
+    int b1 = test_bit(bitmap, 1);
+    printf("query(3)=%d\n", b3); /* 期望 1 */
+    printf("query(1)=%d\n", b1); /* 期望 0 */
 
-    garray_free(a);
+    free(bitmap);
     return 0;
 }
