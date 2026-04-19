@@ -42,4 +42,7 @@ link pop(void);
 // 释放链表内存
 void free_list(link head);
 
+// 获取头指针
+link get_head(void);
+
 #endif  // SINGLY_LINKED_LIST_H

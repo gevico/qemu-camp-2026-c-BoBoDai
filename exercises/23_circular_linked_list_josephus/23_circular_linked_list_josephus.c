@@ -16,29 +16,43 @@ static void josephus_problem(int n, int k, int m) {
         return;
     }
 
-    // prev 指向 current 的前一个节点
+    // current 指向当前节点
     Node* current = head;
-    Node* prev = head;
-    while (prev->next != head) prev = prev->next;
-
-    // 起始位置移动到第 k 个
+    // 找到起始位置第 k 个
     for (int i = 1; i < k; ++i) {
         current = current->next;
     }
 
     // 约瑟夫环出列
     while (n > 0) {
-        // 数到第 m 个
+        // 数到第 m 个（移动 m-1 步）
         for (int i = 1; i < m; ++i) {
             current = current->next;
         }
-        // current 指向要出列的人
+
+        // current 指向要出列的人，打印
         printf("%d ", current->id);
+
+        // 保存下一个节点
+        Node* next_node = current->next;
+
+        // 找到 current 的前一个节点
+        Node* prev = head;
+        while (prev->next != current) {
+            prev = prev->next;
+        }
+
         // 从环中删除 current
-        Node* to_delete = current;
-        prev->next = current->next;
-        current = current->next;
-        free(to_delete);
+        prev->next = next_node;
+
+        // 如果删除的是 head，需要更新 head
+        if (current == head) {
+            head = next_node;
+        }
+
+        // 释放节点
+        free(current);
+        current = next_node;
         n--;
     }
 

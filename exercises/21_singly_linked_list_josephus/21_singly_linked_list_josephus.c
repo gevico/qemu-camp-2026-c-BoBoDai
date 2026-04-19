@@ -3,94 +3,84 @@
 
 #include "singly_linked_list.h"
 
-// 打印节点的值
 void print_item(link p) { printf("%d ", p->item); }
 
-// 通过遍历拿到当前链表的头结点
-static link g_first_node = NULL;
-static void capture_first(link p) {
-    if (g_first_node == NULL) {
-        g_first_node = p;
-    }
-}
-
-static link get_head_node(void) {
-    g_first_node = NULL;
-    traverse(capture_first);
-    return g_first_node;
-}
-
-// 获取下一个节点；若到达尾部则回绕到头结点
-static inline link next_wrap(link p) {
-    if (p == NULL) return get_head_node();
-    return p->next ? p->next : get_head_node();
-}
-
-// 创建单链表
-void create_list(int n) {
-    // 参数校验
+static void create_list(int n) {
     if (n <= 0) return;
-
     destroy();
-    for (int i = n; i >= 1; i--) {
-        link new_node = make_node(i);
-        push(new_node);
+
+    // 创建有序链表：1->2->3->...->n
+    // 使用数组存储节点，然后连接
+    link* nodes = malloc(n * sizeof(link));
+    for (int i = 0; i < n; i++) {
+        nodes[i] = make_node(i + 1);
     }
+    // 连接
+    for (int i = 0; i < n - 1; i++) {
+        nodes[i]->next = nodes[i + 1];
+    }
+    nodes[n - 1]->next = NULL;
+
+    // 由于 insert 在头部插入，我们直接把 nodes[0] 作为 head
+    // 但 head 是 static 的，不能直接访问
+    // 所以我们用 insert 插入 nodes[0]，然后断开它后面多余的连接
+
+    // 更好的方法：逆序插入然后不用环绕
+    // 但约瑟夫环需要环绕，所以我们需要构造一个环
+
+    // 最终方案：创建逆序链表，然后 josephus 时从 tail 开始数
+    for (int i = n; i >= 1; i--) {
+        insert(make_node(i));
+    }
+    // 现在链表是 n->n-1->...->1
+    // 找到 tail
+    link tail = get_head();
+    while (tail->next != NULL) tail = tail->next;
+    // tail->next = get_head(); // 形成环 - 暂时不形成环，用模拟环绕的方式
+    free(nodes);
 }
 
-// 用单链表模拟约瑟夫环问题
-// n: 总人数
-// k: 起始位置（从 1 开始计数）
-// m: 报数阈值（数到 m 的人出列）
 void josephus_problem(int n, int k, int m) {
-    // 参数校验
-    if (n <= 0 || k <= 0 || m <= 0) {
-        printf("参数错误：n, k, m 都必须大于 0\n");
-        return;
-    }
+    if (n <= 0 || k <= 0 || m <= 0) return;
 
     create_list(n);
 
-    // 从头开始，移动到第 k 个位置作为起点（支持 k > n 的情况，按环形回绕）
-    link current = get_head_node();
-    if (!current) {
-        printf("\n");
-        return;
-    }
-    for (int i = 1; i < k; ++i) {
-        current = next_wrap(current);
+    // 由于是逆序链表 n->n-1->...->1
+    // 我们需要从 tail 开始数来得到正确的顺序
+    // 找到 tail（next 为 NULL 的节点）
+    link tail = get_head();
+    while (tail->next != NULL) tail = tail->next;
+    // 从 tail 开始，移动 k-1 步到达第 k 个节点（真正的起始位置）
+    link current = tail;
+    for (int i = 0; i < k - 1; i++) {
+        current = current->next;
     }
 
-    // 依次出列并打印顺序
-    for (int out = 0; out < n; ++out) {
-        if (m == 1) {
-            // m==1 时当前节点直接出列
-            print_item(current);
-            link to_free = current;
-            current = current->next ? current->next : get_head_node();
-            delete(to_free);
-            free_node(to_free);
-        } else {
-            // 数到 m 的那个人出列：从 current 开始走 m-1 步，落在第 m 个节点
-            for (int i = 1; i < m - 1; ++i) {
-                current = next_wrap(current);
-            }
-            // 此时 current 指向要出列的人
-            link to_remove = next_wrap(current);
-            print_item(to_remove);
-            current->next = to_remove->next;
-            free_node(to_remove);
-            current = current->next ? current->next : get_head_node();
+    while (n > 0) {
+        for (int i = 0; i < m - 1; i++) {
+            current = current->next;
+            if (current == NULL) current = get_head();
         }
-    }
 
+        print_item(current);
+
+        // 找前一个
+        link prev = get_head();
+        while (prev->next != current) prev = prev->next;
+
+        prev->next = current->next;
+        link next = current->next;
+        free_node(current);
+        current = next;
+        if (current == NULL) current = get_head();
+        n--;
+    }
     printf("\n");
 }
 
 int main(void) {
-    josephus_problem(5, 1, 2);  // 输出结果：2 4 1 5 3
-    josephus_problem(7, 3, 1);  // 输出结果：3 4 5 6 7 1 2
-    josephus_problem(9, 1, 8);  // 输出结果：8 7 9 2 5 4 1 6 3
-
+    josephus_problem(5, 1, 2);
+    josephus_problem(7, 3, 1);
+    josephus_problem(9, 1, 8);
     return 0;
 }

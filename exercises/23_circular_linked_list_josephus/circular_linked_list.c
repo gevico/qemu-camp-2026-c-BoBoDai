@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static Node* g_head = NULL;
+
 Node* create_circular_list(int n) {
     if (n <= 0) return NULL;
 
@@ -18,6 +20,7 @@ Node* create_circular_list(int n) {
         prev->next = new_node;
         prev = new_node;
     }
+    g_head = head;
     return head;
 }
 
@@ -30,4 +33,7 @@ void free_list(Node* head) {
         p = next;
     }
     free(head);
+    if (g_head == head) {
+        g_head = NULL;
+    }
 }

@@ -6,6 +6,11 @@
 // 全局头指针
 static link head = NULL;
 
+// 获取头指针（供外部文件使用）
+link get_head(void) {
+    return head;
+}
+
 // 创建新节点
 link make_node(unsigned char item) {
     link p = malloc(sizeof(*p));

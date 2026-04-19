@@ -8,6 +8,8 @@
 // - 入队：头插（insert(make_node(v))）
 // - 出队：删除最后一个结点（tail 前的结点）
 
+// 注意：需要先调用 init_queue() 初始化队列
+
 static link g_last = NULL;
 static void capture_last(link p) { g_last = p; }
 static link get_last(void) {
@@ -39,27 +41,29 @@ static void print_dequeue_n(int n) {
 }
 
 int main(void) {
+    init_queue();
+
     // 基本 FIFO 顺序：1 2 3
     enqueue_int(1);
     enqueue_int(2);
     enqueue_int(3);
     print_dequeue_n(3);
     printf("\n");
-    destroy();
+    destroy();  // 清空数据节点，保留哨兵
 
     // 单元素队列：42
     enqueue_int(42);
     printf("single: ");
     print_dequeue_n(1);
     printf("\n");
-    destroy();
+    destroy();  // 清空数据节点，保留哨兵
 
     // 空队列出队：OK（0 代表出队失败）
     {
         int ok = dequeue_int(NULL);
         printf("empty: %s\n", ok ? "NG" : "OK");
     }
-    destroy();
+    destroy_queue();  // 最后销毁哨兵和整个队列
 
     return 0;
 }
