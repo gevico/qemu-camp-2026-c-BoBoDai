@@ -4,74 +4,42 @@
 #define CHECK_OVERFLOW(carry) \
     carry ? "Overflow" : "Not Overflow"
 
+// Portable implementations using compiler intrinsics or simple math
 int check_add_overflow_asm(unsigned int a, unsigned int b) {
-    unsigned char carry;
-    __asm__ volatile(
-        "add %2, %0;\n"
-        "jnc 1f;\n"
-        "mov $1, %1;\n"
-        "jmp 2f;\n"
-        "1:\n"
-        "mov $0, %1;\n"
-        "2:\n"
-        : "+r" (a), "=r" (carry)
-        : "r" (b)
-        : "cc"
-    );
-    return carry;
+#if defined(__GNUC__) || defined(__clang__)
+    unsigned int result;
+    int overflow = __builtin_add_overflow(a, b, &result);
+    return overflow;
+#else
+    unsigned int result = a + b;
+    return result < a;  // Overflow if result wraps around
+#endif
 }
 
 int check_sub_overflow_asm(unsigned int a, unsigned int b) {
-    unsigned char carry;
-    __asm__ volatile(
-        "sub %2, %0;\n"
-        "jnc 1f;\n"
-        "mov $1, %1;\n"
-        "jmp 2f;\n"
-        "1:\n"
-        "mov $0, %1;\n"
-        "2:\n"
-        : "+r" (a), "=r" (carry)
-        : "r" (b)
-        : "cc"
-    );
-    return carry;
+#if defined(__GNUC__) || defined(__clang__)
+    unsigned int result;
+    int overflow = __builtin_sub_overflow(a, b, &result);
+    return overflow;
+#else
+    unsigned int result = a - b;
+    return result > a;  // Overflow if result wraps around
+#endif
 }
 
 int check_mul_overflow_asm(unsigned int a, unsigned int b) {
-    unsigned int high_bits;
-    unsigned char overflow;
-    __asm__ volatile(
-        "mul %2;\n"
-        "test %edx, %edx;\n"
-        "jz 1f;\n"
-        "mov $1, %0;\n"
-        "jmp 2f;\n"
-        "1:\n"
-        "mov $0, %0;\n"
-        "2:\n"
-        : "=r" (overflow)
-        : "a" (a), "r" (b)
-        : "edx", "cc"
-    );
+#if defined(__GNUC__) || defined(__clang__)
+    unsigned int result;
+    int overflow = __builtin_mul_overflow(a, b, &result);
     return overflow;
+#else
+    if (a == 0 || b == 0) return 0;
+    return a > UINT_MAX / b;  // Overflow if a * b > UINT_MAX
+#endif
 }
 
 int check_div_overflow_asm(unsigned int a, unsigned int b) {
-    unsigned char is_div_zero;
-    __asm__ volatile(
-        "test %2, %2;\n"
-        "jz 1f;\n"
-        "mov $0, %1;\n"
-        "jmp 2f;\n"
-        "1:\n"
-        "mov $1, %1;\n"
-        "2:\n"
-        : "+r" (a), "=r" (is_div_zero)
-        : "r" (b)
-        : "cc"
-    );
-    return is_div_zero;
+    return b == 0;  // Division by zero
 }
 
 int main() {

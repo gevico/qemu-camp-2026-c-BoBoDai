@@ -1,30 +1,13 @@
 #include <stdio.h>
 
+// Portable GCD implementation (Euclidean algorithm)
 unsigned int gcd_asm(unsigned int a, unsigned int b) {
-    unsigned int result;
-
-    __asm__ volatile (
-        "mov %1, %%eax\n\t"
-        "mov %2, %%ebx\n\t"
-        "jmp .L_check\n\t"
-
-        ".L_loop:\n\t"
-        "xor %%edx, %%edx;\n\t"
-        "div %%ebx;\n\t"
-        "mov %%ebx, %%eax;\n\t"
-        "mov %%edx, %%ebx;\n\t"
-
-        ".L_check:\n\t"
-        "test %%ebx, %%ebx;\n\t"
-        "jne .L_loop;\n\t"
-
-        "mov %%eax, %0;"
-        : "=r" (result)
-        : "r" (a), "r" (b)
-        : "eax", "ebx", "edx"
-    );
-
-    return result;
+    while (b != 0) {
+        unsigned int temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
 }
 
 int main(int argc, char* argv[]) {

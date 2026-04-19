@@ -43,13 +43,14 @@ void add_word(WordCount **hash_table, const char *word) {
 
 // 打印单词统计结果
 void print_word_counts(WordCount **hash_table) {
-  printf("Word Count Statistics:\n");
-  printf("======================\n");
-
     for (int i = 0; i < HASH_SIZE; i++) {
         WordCount *entry = hash_table[i];
         while (entry != NULL) {
-            printf("%-25s %d\n", entry->word, entry->count);
+            int len = strlen(entry->word);
+            printf("%s", entry->word);
+            // Add spaces to make word field 21 chars total
+            for (int j = 0; j < 21 - len; j++) putchar(' ');
+            printf("%d\n", entry->count);
             entry = entry->next;
         }
     }
