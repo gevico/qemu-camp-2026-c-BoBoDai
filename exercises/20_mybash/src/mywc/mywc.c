@@ -49,7 +49,10 @@ void print_word_counts(WordCount **hash_table) {
   for (int i = 0; i < HASH_SIZE; i++) {
     WordCount *entry = hash_table[i];
     while (entry != NULL) {
-      printf("%s: %d\n", entry->word, entry->count);
+      int len = strlen(entry->word);
+      printf("%s", entry->word);
+      for (int j = 0; j < 21 - len; j++) putchar(' ');
+      printf("%d\n", entry->count);
       entry = entry->next;
     }
   }
