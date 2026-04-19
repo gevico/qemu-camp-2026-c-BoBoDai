@@ -87,8 +87,10 @@ static void *consumer(void *arg) {
     for (size_t i = 0; i < ca->n; i++) {
         int val;
         rb_pop(ca->rb, &val);
-        printf("%d\n", val);
+        if (i > 0) printf(",");
+        printf("%d", val);
     }
+    printf("\n");
     return NULL;
 }
 
