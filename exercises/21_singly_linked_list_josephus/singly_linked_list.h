@@ -45,4 +45,7 @@ void free_list(link head);
 // 获取头指针
 link get_head(void);
 
+// 清除头指针（用于约瑟夫环问题删除最后一个节点后）
+void clear_head(void);
+
 #endif  // SINGLY_LINKED_LIST_H

@@ -11,6 +11,11 @@ link get_head(void) {
     return head;
 }
 
+// 清除头指针（用于约瑟夫环问题删除最后一个节点后）
+void clear_head(void) {
+    head = NULL;
+}
+
 // 创建新节点
 link make_node(unsigned char item) {
     link p = malloc(sizeof(*p));
@@ -64,12 +69,14 @@ void traverse(void (*visit)(link)) {
 
 // 销毁整个链表
 void destroy(void) {
+    if (head == NULL) return;
+    link start = head;
     link p = head;
-    while (p != NULL) {
+    do {
         link next = p->next;
         free(p);
         p = next;
-    }
+    } while (p != start);
     head = NULL;
 }
 
