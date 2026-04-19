@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,10 +16,12 @@
 #define ELFMAG2 'L'
 #define ELFMAG3 'F'
 
+#pragma pack(1)
 typedef struct {
     unsigned char e_ident[16];
-    unsigned short e_type;
+    uint16_t e_type;
 } Elf64_Ehdr;
+#pragma pack()
 
 void print_elf_type(uint16_t e_type) {
   const char *type_str;
