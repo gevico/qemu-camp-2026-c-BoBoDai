@@ -1,23 +1,46 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <execinfo.h>
 
-#ifdef TODO
-
-#define DEBUG_PRINT(fmt, ...) \
-    fprintf(stderr, "[DEBUG] %s:%d: " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__)
-
+// 当 DEBUG_LEVEL=2 时启用详细调试输出
+#if DEBUG_LEVEL == 2
+#define DEBUG_PRINT(fmt, ...) fprintf(stdout, "DEBUG: func=%s, line=%d, " fmt "\n", __func__, __LINE__, ##__VA_ARGS__)
 #else
-
 #define DEBUG_PRINT(fmt, ...) do {} while (0)
-
 #endif
 
 
 
 
 
+
+
 //! MUST BE ENSURE THE DEBUG_PRINT("x=%d", x) AT THE 48 LINE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // 测试代码
 void test() {
