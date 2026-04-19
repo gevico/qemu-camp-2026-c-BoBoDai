@@ -49,7 +49,7 @@ void hash_table_insert(HashTable *ht, const char *word) {
         node = node->next;
     }
 
-    HashNode *new_node = malloc(sizeof(HashNode));
+    HashNode *new_node = calloc(1, sizeof(HashNode));
     new_node->word = strdup(word);
     new_node->count = 1;
     new_node->next = ht->table[hash];
