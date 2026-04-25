@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,24 +16,24 @@
 
 // 函数指针类型定义
 typedef int (*cmd_func_0_t)(void);
-typedef int (*cmd_func_1_t)(const char*);
-typedef int (*cmd_func_2_t)(const char*, const char*);
+typedef int (*cmd_func_1_t)(const char *);
+typedef int (*cmd_func_2_t)(const char *, const char *);
 
 // 命令结构体
 typedef struct {
-    const char *name;             // 命令名，如 "myfile"
-    int is_arg_required;          // 是否需要参数：1 需要，0 不需要
-    union {
-        cmd_func_0_t func_0;      // 无参数函数
-        cmd_func_1_t func_1;      // 带一个 const char* 参数的函数
-        cmd_func_2_t func_2;
-    } func;
+  const char *name;    // 命令名，如 "myfile"
+  int is_arg_required; // 是否需要参数：1 需要，0 不需要
+  union {
+    cmd_func_0_t func_0; // 无参数函数
+    cmd_func_1_t func_1; // 带一个 const char* 参数的函数
+    cmd_func_2_t func_2;
+  } func;
 } Command;
 
 // 命令表：手动注册所有支持的外部命令
 Command commands[] = {
     {"myfile", 1, .func.func_1 = __cmd_myfile},   // 需要 1 个参数
-    {"mysed",  2, .func.func_2 = __cmd_mysed},    // 需要 2 个参数
+    {"mysed", 2, .func.func_2 = __cmd_mysed},     // 需要 2 个参数
     {"mytrans", 1, .func.func_1 = __cmd_mytrans}, // 需要 1 个参数
     {"mywc", 1, .func.func_1 = __cmd_mywc},       // 需要 1 个参数
     {NULL, 0, .func.func_0 = NULL}                // 结束标记
@@ -62,8 +63,7 @@ int is_builtin_command(char **args) {
   if (strcmp(args[0], "cd") == 0) {
     execute_cd(args);
     return 1;
-  }
-  if (strcmp(args[0], "exit") == 0) {
+  } else if (strcmp(args[0], "exit") == 0) {
     execute_exit();
     return 1;
   }
@@ -76,45 +76,49 @@ int parse_input(char *input, char **args) {
   int in_quotes = 0;
   char *buf = input;
   char *arg_start = NULL;
-  char arg_buf[MAX_INPUT];  // 临时存储当前正在解析的参数
+  char arg_buf[MAX_INPUT]; // 临时存储当前正在解析的参数
   int arg_buf_idx = 0;
 
   memset(arg_buf, 0, sizeof(arg_buf));
 
   while (*buf != '\0' && i < MAX_ARGS - 1) {
-      char c = *buf;
+    char c = *buf;
 
+    if (c == '"') {
       if (in_quotes) {
-          if (c == '"') {
-              in_quotes = 0;
-          } else {
-              arg_buf[arg_buf_idx++] = c;
-          }
+        arg_buf[arg_buf_idx] = '\0';
+        args[i++] = strdup(arg_buf);
+        arg_buf_idx = 0;
+        in_quotes = 0;
+        arg_start = NULL;
       } else {
-          if (c == '"') {
-              in_quotes = 1;
-          } else if (c == ' ' || c == '\t') {
-              if (arg_buf_idx > 0) {
-                  arg_buf[arg_buf_idx] = '\0';
-                  args[i++] = strdup(arg_buf);
-                  arg_buf_idx = 0;
-                  memset(arg_buf, 0, sizeof(arg_buf));
-              }
-          } else {
-              arg_buf[arg_buf_idx++] = c;
-          }
+        in_quotes = 1;
+        arg_start = buf + 1;
       }
+    } else if (isspace((unsigned char)c) && !in_quotes) {
+      if (arg_start) {
+        arg_buf[arg_buf_idx] = '\0';
+        args[i++] = strdup(arg_buf);
+        arg_buf_idx = 0;
+        arg_start = NULL;
+      }
+    } else {
+      if (!arg_start) {
+        arg_start = buf;
+      }
+      arg_buf[arg_buf_idx++] = c;
+    }
 
-      buf++;
+    buf++;
   }
 
   // 处理最后一个参数（循环结束后可能还有未加入的）
   if (arg_buf_idx > 0) {
-      arg_buf[arg_buf_idx] = '\0';
-      args[i++] = strdup(arg_buf);
+    arg_buf[arg_buf_idx] = '\0';
+    args[i++] = strdup(arg_buf);
   }
 
-  args[i] = NULL;  // exec-style NULL结尾
+  args[i] = NULL; // exec-style NULL结尾
   return i;
 }
 
@@ -144,7 +148,7 @@ int main(int argc, char *argv[]) {
       int argc_parsed = parse_input(input, args);
 
       if (argc_parsed == 0) {
-        continue;  // 空行
+        continue; // 空行
       }
 
       // 处理内置命令
@@ -183,8 +187,7 @@ int main(int argc, char *argv[]) {
 
     fclose(file);
     return 0;
-  } 
-  else {
+  } else {
     // 🔁 原有的交互式命令行模式
     while (1) {
       printf("mybash$ ");
