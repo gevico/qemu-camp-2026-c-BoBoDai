@@ -101,8 +101,9 @@ char *get_next_word(const char **text) {
     while (**text && !isalnum((unsigned char)**text)) (*text)++;
     if (!**text) return NULL;
 
-    char *word = malloc(256);
+    char *word = malloc(257);
     int len = 0;
+    if (!word) return NULL;
     while (**text && isalnum((unsigned char)**text)) {
         word[len++] = **text;
         (*text)++;
