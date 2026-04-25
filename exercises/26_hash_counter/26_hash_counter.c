@@ -98,13 +98,13 @@ void free_hash_table(HashTable *ht) {
 
 // 从字符串中获取下一个单词
 char *get_next_word(const char **text) {
-    while (**text && !isalnum((unsigned char)**text)) (*text)++;
+    while (**text && !isalpha((unsigned char)**text)) (*text)++;
     if (!**text) return NULL;
 
     char *word = malloc(257);
     int len = 0;
     if (!word) return NULL;
-    while (**text && isalnum((unsigned char)**text)) {
+    while (**text && isalpha((unsigned char)**text)) {
         word[len++] = **text;
         (*text)++;
     }
