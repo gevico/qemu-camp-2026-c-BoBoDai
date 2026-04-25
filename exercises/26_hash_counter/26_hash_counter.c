@@ -1,163 +1,181 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
-#define TABLE_SIZE 1024  // 哈希表大小
+#define TABLE_SIZE 1024 // 哈希表大小
 
 // 哈希表节点结构
 typedef struct HashNode {
-    char *word;
-    int count;
-    struct HashNode *next;
+  char *word;
+  int count;
+  struct HashNode *next;
 } HashNode;
 
 // 哈希表结构
 typedef struct {
-    HashNode **table;
-    int size;
+  HashNode **table;
+  int size;
 } HashTable;
 
 // djb2哈希函数
 unsigned long djb2_hash(const char *str) {
-    unsigned long hash = 5381;
-    int c;
-    while ((c = *str++)) {
-        hash = ((hash << 5) + hash) + c;
-    }
-    return hash;
+  // TODO: 在这里添加你的代码
+  unsigned long hash = 5381;
+  int c;
+  while ((c = *str++))
+    hash = ((hash << 5) + hash) + c; // hash * 33 + c
+  return hash;
 }
 
 // 创建哈希表
 HashTable *create_hash_table(int size) {
-    HashTable *ht = malloc(sizeof(HashTable));
-    ht->table = calloc(size, sizeof(HashNode *));
-    ht->size = size;
-    return ht;
+  HashTable *ht = malloc(sizeof(HashTable));
+  ht->table = calloc(size, sizeof(HashNode *));
+  ht->size = size;
+  return ht;
 }
 
 // 向哈希表中插入单词
 void hash_table_insert(HashTable *ht, const char *word) {
-    unsigned long hash = djb2_hash(word) % ht->size;
+  unsigned long hash = djb2_hash(word) % ht->size;
 
-    HashNode *node = ht->table[hash];
-    while (node != NULL) {
-        if (strcmp(node->word, word) == 0) {
-            node->count++;
-            return;
-        }
-        node = node->next;
+  HashNode *node = ht->table[hash];
+  while (node) {
+    if (strcmp(node->word, word) == 0) {
+      node->count += 1;
+      return;
     }
-
-    HashNode *new_node = calloc(1, sizeof(HashNode));
-    new_node->word = strdup(word);
-    new_node->count = 1;
-    new_node->next = ht->table[hash];
-    ht->table[hash] = new_node;
+    node = node->next;
+  }
+  HashNode *new_node = (HashNode *)malloc(sizeof(HashNode));
+  if (new_node == NULL) {
+    return;
+  }
+  size_t len = strlen(word) + 1;
+  new_node->word = malloc(len);
+  if (new_node->word == NULL) {
+    free(new_node);
+    return;
+  }
+  memcpy(new_node->word, word, len);
+  new_node->count = 1;
+  new_node->next = ht->table[hash];
+  ht->table[hash] = new_node;
 }
 
 // 从哈希表中获取所有单词及其计数
 void get_all_words(HashTable *ht, HashNode **nodes, int *count) {
-    *count = 0;
-    for (int i = 0; i < ht->size; i++) {
-        HashNode *node = ht->table[i];
-        while (node != NULL) {
-            nodes[*count] = node;
-            (*count)++;
-            node = node->next;
-        }
+  // TODO: 在这里添加你的代码
+  for (int i = 0; i < ht->size; ++i) {
+    HashNode *node = ht->table[i];
+    while (node) {
+      nodes[*count] = node;
+      (*count)++;
+      node = node->next;
     }
+  }
 }
 
 // 比较函数用于排序
 int compare_nodes(const void *a, const void *b) {
-    HashNode *node_a = *(HashNode **)a;
-    HashNode *node_b = *(HashNode **)b;
+  HashNode *node_a = *(HashNode **)a;
+  HashNode *node_b = *(HashNode **)b;
 
-    // 先按计数降序，再按字母升序
-    if (node_b->count != node_a->count) {
-        return node_b->count - node_a->count;
-    }
-    return strcmp(node_a->word, node_b->word);
+  // 先按计数降序，再按字母升序
+  if (node_a->count > node_b->count) {
+    return -1;
+  } else if (node_a->count < node_b->count) {
+    return 1;
+  }
+  return strcmp(node_a->word, node_b->word);
 }
 
 // 释放哈希表内存
 void free_hash_table(HashTable *ht) {
-    for (int i = 0; i < ht->size; i++) {
-        HashNode *node = ht->table[i];
-        while (node != NULL) {
-            HashNode *temp = node;
-            node = node->next;
-            free(temp->word);
-            free(temp);
-        }
+  for (int i = 0; i < ht->size; i++) {
+    HashNode *node = ht->table[i];
+    while (node != NULL) {
+      HashNode *temp = node;
+      node = node->next;
+      free(temp->word);
+      free(temp);
     }
-    free(ht->table);
-    free(ht);
+  }
+  free(ht->table);
+  free(ht);
 }
 
 // 从字符串中获取下一个单词
 char *get_next_word(const char **text) {
-    while (**text && !isalpha((unsigned char)**text)) (*text)++;
-    if (!**text) return NULL;
+  // TODO: 在这里添加你的代码
+  while (**text && !isalpha(**text)) {
+    (*text)++;
+  }
+  if (**text == '\0') {
+    return NULL;
+  }
 
-    char *word = malloc(257);
-    int len = 0;
-    if (!word) return NULL;
-    while (**text && isalpha((unsigned char)**text)) {
-        word[len++] = **text;
-        (*text)++;
-    }
-    word[len] = '\0';
-    return word;
+  const char *start = *text;
+  while (**text && isalpha(**text)) {
+    (*text)++;
+  }
+
+  int len = *text - start;
+  char *word = (char *)malloc(len + 1);
+  strncpy(word, start, len);
+  word[len] = '\0';
+
+  return word;
 }
 
 int main(int argc, char *argv[]) {
-    const char* file_path = "paper.txt";
+  const char *file_path = "paper.txt";
 
-    FILE *file = fopen(file_path, "r");
-    if (file == NULL) {
-        perror("无法打开文件");
-        return 1;
+  FILE *file = fopen(file_path, "r");
+  if (file == NULL) {
+    perror("无法打开文件");
+    return 1;
+  }
+
+  HashTable *ht = create_hash_table(TABLE_SIZE);
+  char buffer[4096];
+
+  printf("正在读取文件: %s\n", file_path);
+
+  // 从文件读取直到EOF
+  while (fgets(buffer, sizeof(buffer), file) != NULL) {
+    const char *ptr = buffer;
+    char *word;
+
+    while ((word = get_next_word(&ptr)) != NULL) {
+      printf("处理单词: %s\n", word);
+      hash_table_insert(ht, word);
+      free(word);
     }
+  }
 
-    HashTable *ht = create_hash_table(TABLE_SIZE);
-    char buffer[4096];
+  fclose(file);
 
-    printf("正在读取文件: %s\n", file_path);
+  // 收集所有单词节点
+  HashNode **nodes = malloc(TABLE_SIZE * sizeof(HashNode *));
+  int node_count = 0;
+  get_all_words(ht, nodes, &node_count);
 
-    // 从文件读取直到EOF
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
-        const char *ptr = buffer;
-        char *word;
+  // 排序
+  qsort(nodes, node_count, sizeof(HashNode *), compare_nodes);
 
-        while ((word = get_next_word(&ptr)) != NULL) {
-            hash_table_insert(ht, word);
-            free(word);
-        }
-    }
+  // 输出结果
+  printf("\n单词统计结果（按频率降序排列）:\n");
+  printf("%-20s %s\n", "单词", "出现次数");
+  printf("-------------------- ----------\n");
+  for (int i = 0; i < node_count; i++) {
+    printf("%s:%d\n", nodes[i]->word, nodes[i]->count);
+  }
 
-    fclose(file);
+  // 释放内存
+  free(nodes);
+  free_hash_table(ht);
 
-    // 收集所有单词节点
-    HashNode **nodes = malloc(TABLE_SIZE * sizeof(HashNode *));
-    int node_count = 0;
-    get_all_words(ht, nodes, &node_count);
-
-    // 排序
-    qsort(nodes, node_count, sizeof(HashNode *), compare_nodes);
-
-    // 输出结果
-    printf("\n单词统计结果（按频率降序排列）:\n");
-    printf("%-20s %s\n", "单词", "出现次数");
-    printf("-------------------- ----------\n");
-    for (int i = 0; i < node_count; i++) {
-        printf("%s:%d\n", nodes[i]->word, nodes[i]->count);
-    }
-
-    // 释放内存
-    free(nodes);
-    free_hash_table(ht);
-
-    return 0;
+  return 0;
 }
